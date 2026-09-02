@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Resin Ops
+
+Centralized production planning & monitoring platform for Thermax's ion exchange resin manufacturing business (Phase 1).
+
+## Structure
+
+This is a Turborepo monorepo with two independently deployable apps and one shared package:
+
+- `apps/web` — the Next.js dashboard (UI only). Fetches all data from `apps/api` over HTTP.
+- `apps/api` — a Next.js app exposing REST endpoints (Route Handlers only, no UI). Owns the database connection.
+- `packages/db` — shared Drizzle ORM schema and database client, used only by `apps/api`.
+
+Each app has its own `package.json`, deploys as its own Vercel project, and scales independently.
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies from the repo root:
+
+```bash
+npm install
+```
+
+Run both apps in dev mode:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `apps/web` runs on http://localhost:3001 (falls back if 3000 is taken)
+- `apps/api` runs on http://localhost:3002
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Each app needs its own `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `apps/api/.env.local` — `DATABASE_URL` (Neon) plus `INTERNAL_API_KEY`
+- `apps/web/.env.local` — `API_BASE_URL` (pointing at the deployed/local `apps/api`) and the same `INTERNAL_API_KEY`
 
-## Learn More
+`INTERNAL_API_KEY` is a shared secret apps/web sends on every request so apps/api isn't a fully open public endpoint — both apps must use the same value.
 
-To learn more about Next.js, take a look at the following resources:
+## Database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Schema lives in `packages/db/src/schema.ts`. From the repo root:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run db:push    # push schema changes to Neon
+npm run db:studio  # open Drizzle Studio
+npm run db:seed    # seed initial plant data
+```
 
-## Deploy on Vercel
+## Build
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run build   # builds both apps via Turborepo
+npm run lint    # lints both apps
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploying
+
+Each app is its own Vercel project pointed at this repo, with **Root Directory** set to `apps/web` or `apps/api` respectively in Project Settings → General. Push to `main` deploys production; any other branch deploys a preview.
