@@ -64,7 +64,7 @@ export default async function BatchesPage() {
       <div>
         <h1 className="text-lg font-semibold">Batches</h1>
         <p className="text-sm text-muted-foreground">
-          Batch schedule across all plants and streams. Behind schedule = completion is or projects more than 0.5 days late.
+          Batch schedule across all plants and streams. A batch is flagged behind schedule once it&apos;s more than half a day past its planned completion.
         </p>
       </div>
       {rows.length === 0 ? (
