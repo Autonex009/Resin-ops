@@ -1,6 +1,9 @@
 import { Database, TrendingUp, Gauge, ListChecks, ClipboardList } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { EmptyState } from "@/components/empty-state";
+import { DailyTrendChart } from "@/components/daily-trend-chart";
+import { CapacityByStreamChart } from "@/components/capacity-by-stream-chart";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { isApiConfigured, describeApiError, getKpis, type KpisResponse } from "@/lib/api-client";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +32,7 @@ export default async function OverviewPage() {
     return <EmptyState icon={Database} title="Couldn't load KPIs" description={describeApiError(error)} />;
   }
 
-  const { output, capacity, batchesBehind, commitmentsShort } = data;
+  const { output, capacity, batchesBehind, commitmentsShort, dailyTrend, capacityByStream } = data;
   const attainmentPct = output.planned > 0 ? (output.actual / output.planned) * 100 : null;
   const utilizationPct = capacity.capacity > 0 ? (output.actual / capacity.capacity) * 100 : null;
 
@@ -74,6 +77,30 @@ export default async function OverviewPage() {
           icon={ClipboardList}
           tone={commitmentsShort > 0 ? "warning" : "default"}
         />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Output vs Target Pace</CardTitle>
+            <CardDescription>
+              Cumulative actual output this month against a straight-line pace toward plan.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DailyTrendChart data={dailyTrend} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Capacity Utilization by Stream</CardTitle>
+            <CardDescription>
+              Actual output against maximum capacity this month, per manufacturing stream.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CapacityByStreamChart data={capacityByStream} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
