@@ -1,58 +1,37 @@
-# Resin Ops
+# Resin Ops — Frontend
 
-Centralized production planning & monitoring platform for Thermax's ion exchange resin manufacturing business (Phase 1).
+Dashboard for the Resin Ops production planning platform (Thermax ion exchange resin manufacturing, Phase 1). Next.js App Router UI, shadcn/ui, dark mode. Fetches all data from the backend API over HTTP — no direct database access.
 
-## Structure
-
-This is a Turborepo monorepo with two independently deployable apps and one shared package:
-
-- `apps/web` — the Next.js dashboard (UI only). Fetches all data from `apps/api` over HTTP.
-- `apps/api` — a Next.js app exposing REST endpoints (Route Handlers only, no UI). Owns the database connection.
-- `packages/db` — shared Drizzle ORM schema and database client, used only by `apps/api`.
-
-Each app has its own `package.json`, deploys as its own Vercel project, and scales independently.
+Backend API lives in a separate repo: [Autonex009/Resin-ops-backend](https://github.com/Autonex009/Resin-ops-backend).
 
 ## Getting Started
 
-Install dependencies from the repo root:
-
 ```bash
 npm install
+npm run dev   # http://localhost:3000 (or :3001 if 3000 is taken)
 ```
 
-Run both apps in dev mode:
+Requires a `.env.local` with:
 
-```bash
-npm run dev
-```
+- `API_BASE_URL` — base URL of the backend API (e.g. `http://localhost:3002` locally, or the deployed API URL)
+- `INTERNAL_API_KEY` — shared secret sent on every API request as the `x-internal-api-key` header. Must match the value configured on the backend.
 
-- `apps/web` runs on http://localhost:3001 (falls back if 3000 is taken)
-- `apps/api` runs on http://localhost:3002
+## Pages
 
-Each app needs its own `.env.local`:
-
-- `apps/api/.env.local` — `DATABASE_URL` (Neon) plus `INTERNAL_API_KEY`
-- `apps/web/.env.local` — `API_BASE_URL` (pointing at the deployed/local `apps/api`) and the same `INTERNAL_API_KEY`
-
-`INTERNAL_API_KEY` is a shared secret apps/web sends on every request so apps/api isn't a fully open public endpoint — both apps must use the same value.
-
-## Database
-
-Schema lives in `packages/db/src/schema.ts`. From the repo root:
-
-```bash
-npm run db:push    # push schema changes to Neon
-npm run db:studio  # open Drizzle Studio
-npm run db:seed    # seed initial plant data
-```
+- **Overview** — plan attainment, capacity utilization, batches behind, commitments short
+- **Plan vs Actual** — day-by-day planned vs actual output, filterable by plant/stream/month
+- **Capacity Utilization** — actual output vs max capacity, per plant/stream
+- **Batches** — batch schedule with a computed "behind schedule" flag
+- **Commitments** — imported sales commitments
+- **Data Import** — upload Sales Commitment, Plant Capacity, and Daily Output files
 
 ## Build
 
 ```bash
-npm run build   # builds both apps via Turborepo
-npm run lint    # lints both apps
+npm run build
+npm run lint
 ```
 
 ## Deploying
 
-Each app is its own Vercel project pointed at this repo, with **Root Directory** set to `apps/web` or `apps/api` respectively in Project Settings → General. Push to `main` deploys production; any other branch deploys a preview.
+This repo is connected to the `resin-ops-web` Vercel project. Push to `main` deploys production; any other branch deploys a preview.
