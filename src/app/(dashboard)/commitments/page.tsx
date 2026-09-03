@@ -1,6 +1,7 @@
 import { Database, ClipboardList, Info } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -13,6 +14,11 @@ import {
 import { isApiConfigured, describeApiError, getCommitments, type Commitment } from "@/lib/api-client";
 
 export const dynamic = "force-dynamic";
+
+function isShort(c: Commitment) {
+  const today = new Date().toISOString().slice(0, 10);
+  return Boolean(c.requiredDate) && c.requiredDate! < today && Number(c.balanceQty) > 0;
+}
 
 export default async function CommitmentsPage() {
   if (!isApiConfigured()) {
@@ -50,11 +56,12 @@ export default async function CommitmentsPage() {
       </div>
       <Alert>
         <Info className="h-4 w-4" />
-        <AlertTitle>Commitments Short KPI is not yet computable</AlertTitle>
+        <AlertTitle>Commitments Short uses a provisional rule</AlertTitle>
         <AlertDescription>
-          The current Sales Commitment file has no customer required-delivery-date field, only
-          the order date. Confirm with Thermax whether a required date exists (or should be
-          derived from order date + standard lead time) before this KPI can be implemented.
+          The Sales Commitment file has no confirmed required-delivery-date field, so Required
+          Date is backfilled as order date + 21 days until Thermax confirms the real field or
+          lead time. This KPI also only flags commitments already past that date with balance
+          outstanding — it does not yet project risk from remaining capacity.
         </AlertDescription>
       </Alert>
       {rows.length === 0 ? (
@@ -71,12 +78,14 @@ export default async function CommitmentsPage() {
                 <TableRow>
                   <TableHead>Order #</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead>Required</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead>Plant</TableHead>
                   <TableHead className="text-right">Balance Qty</TableHead>
                   <TableHead className="text-right">Balance Value</TableHead>
                   <TableHead>Business Group</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -84,6 +93,7 @@ export default async function CommitmentsPage() {
                   <TableRow key={c.id}>
                     <TableCell className="font-mono text-xs">{c.salesOrderNumber}</TableCell>
                     <TableCell>{c.salesOrderDate}</TableCell>
+                    <TableCell>{c.requiredDate ?? "—"}</TableCell>
                     <TableCell>{c.customerName}</TableCell>
                     <TableCell>
                       <div className="flex flex-col">
@@ -103,6 +113,13 @@ export default async function CommitmentsPage() {
                       {c.balanceValue ? Number(c.balanceValue).toLocaleString() : "—"}
                     </TableCell>
                     <TableCell>{c.businessGroup ?? "—"}</TableCell>
+                    <TableCell>
+                      {isShort(c) ? (
+                        <Badge variant="destructive">Short</Badge>
+                      ) : (
+                        <Badge variant="outline">On track</Badge>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
