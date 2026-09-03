@@ -27,6 +27,7 @@ export type Commitment = {
   id: string;
   salesOrderNumber: string;
   salesOrderDate: string;
+  requiredDate: string | null;
   customerName: string;
   itemCode: string;
   itemDescription: string | null;
@@ -40,6 +41,7 @@ export type KpisResponse = {
   output: { actual: number; planned: number; month: string };
   capacity: { actual: number; capacity: number; month: string };
   batchesBehind: number;
+  commitmentsShort: number;
 };
 
 export type ImportResult = { success: boolean; message: string };

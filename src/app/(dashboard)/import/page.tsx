@@ -55,6 +55,7 @@ export default function ImportPage() {
                 expectedColumns={[
                   "Sales Order Number",
                   "Sales Order Date",
+                  "Required Date (optional — backfilled as order date + 21 days if omitted)",
                   "Salesperson Name",
                   "Customer Name",
                   "Container Dispatch Location (Plant-internal)",

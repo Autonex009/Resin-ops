@@ -29,7 +29,7 @@ export default async function OverviewPage() {
     return <EmptyState icon={Database} title="Couldn't load KPIs" description={describeApiError(error)} />;
   }
 
-  const { output, capacity, batchesBehind } = data;
+  const { output, capacity, batchesBehind, commitmentsShort } = data;
   const attainmentPct = output.planned > 0 ? (output.actual / output.planned) * 100 : null;
   const utilizationPct = capacity.capacity > 0 ? (output.actual / capacity.capacity) * 100 : null;
 
@@ -69,10 +69,10 @@ export default async function OverviewPage() {
         />
         <KpiCard
           title="Commitments Short"
-          value="—"
-          subtext="Needs a customer required-date field — not in the current Sales Commitment file"
+          value={String(commitmentsShort)}
+          subtext="Required date already passed with balance outstanding (reactive — not capacity-projected yet)"
           icon={ClipboardList}
-          tone="muted"
+          tone={commitmentsShort > 0 ? "warning" : "default"}
         />
       </div>
     </div>
