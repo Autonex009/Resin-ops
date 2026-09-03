@@ -37,11 +37,22 @@ export type Commitment = {
   plant: { code: string } | null;
 };
 
+export type DailyTrendPoint = { day: string; actual: number; target: number };
+
+export type StreamCapacityPoint = {
+  stream: string;
+  capacity: number;
+  actual: number;
+  utilizationPct: number;
+};
+
 export type KpisResponse = {
   output: { actual: number; planned: number; month: string };
   capacity: { actual: number; capacity: number; month: string };
   batchesBehind: number;
   commitmentsShort: number;
+  dailyTrend: DailyTrendPoint[];
+  capacityByStream: StreamCapacityPoint[];
 };
 
 export type ImportResult = { success: boolean; message: string };
