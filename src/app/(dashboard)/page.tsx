@@ -3,6 +3,8 @@ import { KpiCard } from "@/components/kpi-card";
 import { EmptyState } from "@/components/empty-state";
 import { DailyTrendChart } from "@/components/daily-trend-chart";
 import { CapacityByStreamChart } from "@/components/capacity-by-stream-chart";
+import { OutputByPlantChart } from "@/components/output-by-plant-chart";
+import { BatchScheduleChart } from "@/components/batch-schedule-chart";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { isApiConfigured, describeApiError, getKpis, type KpisResponse } from "@/lib/api-client";
 
@@ -32,7 +34,16 @@ export default async function OverviewPage() {
     return <EmptyState icon={Database} title="Couldn't load KPIs" description={describeApiError(error)} />;
   }
 
-  const { output, capacity, batchesBehind, commitmentsShort, dailyTrend, capacityByStream } = data;
+  const {
+    output,
+    capacity,
+    batchesBehind,
+    commitmentsShort,
+    dailyTrend,
+    capacityByStream,
+    outputByPlant,
+    batchesSchedule,
+  } = data;
   const attainmentPct = output.planned > 0 ? (output.actual / output.planned) * 100 : null;
   const utilizationPct = capacity.capacity > 0 ? (output.actual / capacity.capacity) * 100 : null;
 
@@ -99,6 +110,34 @@ export default async function OverviewPage() {
           </CardHeader>
           <CardContent>
             <CapacityByStreamChart data={capacityByStream} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Output by Plant</CardTitle>
+            <CardDescription>
+              Actual vs planned output this month, per plant.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {outputByPlant.length === 0 ? (
+              <p className="flex h-[220px] items-center justify-center text-sm text-muted-foreground">
+                No output recorded this month yet.
+              </p>
+            ) : (
+              <OutputByPlantChart data={outputByPlant} />
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Batch Schedule Health</CardTitle>
+            <CardDescription>
+              All batches, on track vs behind schedule.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BatchScheduleChart data={batchesSchedule} />
           </CardContent>
         </Card>
       </div>
