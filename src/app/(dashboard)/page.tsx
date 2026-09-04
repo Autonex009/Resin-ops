@@ -5,6 +5,10 @@ import { DailyTrendChart } from "@/components/daily-trend-chart";
 import { CapacityByStreamChart } from "@/components/capacity-by-stream-chart";
 import { OutputByPlantChart } from "@/components/output-by-plant-chart";
 import { BatchScheduleChart } from "@/components/batch-schedule-chart";
+import { MixedBedDependencyChart } from "@/components/mixed-bed-dependency-chart";
+import { CommitmentsAgingChart } from "@/components/commitments-aging-chart";
+import { BatchDueDateHeatmap } from "@/components/batch-due-date-heatmap";
+import { PlantStreamHeatmap } from "@/components/plant-stream-heatmap";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { isApiConfigured, describeApiError, getKpis, type KpisResponse } from "@/lib/api-client";
 
@@ -43,9 +47,16 @@ export default async function OverviewPage() {
     capacityByStream,
     outputByPlant,
     batchesSchedule,
+    commitmentsAging,
+    batchDueDates,
+    capacityByPlantAndStream,
   } = data;
   const attainmentPct = output.planned > 0 ? (output.actual / output.planned) * 100 : null;
   const utilizationPct = capacity.capacity > 0 ? (output.actual / capacity.capacity) * 100 : null;
+  const feederCeilingPct = Math.min(
+    capacityByStream.find((s) => s.stream === "cation")?.utilizationPct ?? 0,
+    capacityByStream.find((s) => s.stream === "anion")?.utilizationPct ?? 0,
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -138,6 +149,51 @@ export default async function OverviewPage() {
           </CardHeader>
           <CardContent>
             <BatchScheduleChart data={batchesSchedule} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Mixed Bed Dependency</CardTitle>
+            <CardDescription>
+              Mixed Bed can&apos;t out-produce its slower feeder stream — the dashed line marks
+              that ceiling, {feederCeilingPct}% this month.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MixedBedDependencyChart data={capacityByStream} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Commitments Aging</CardTitle>
+            <CardDescription>
+              Open commitments by days until required — the risk pipeline behind Commitments Short.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CommitmentsAgingChart data={commitmentsAging} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Batch Due-Date Load</CardTitle>
+            <CardDescription>
+              Batches due per day this month — spot clustering before it becomes a bottleneck.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BatchDueDateHeatmap data={batchDueDates} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Plant × Stream Utilization</CardTitle>
+            <CardDescription>
+              Every plant and stream combination this month, at a glance.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PlantStreamHeatmap data={capacityByPlantAndStream} />
           </CardContent>
         </Card>
       </div>
