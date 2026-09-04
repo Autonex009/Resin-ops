@@ -50,6 +50,19 @@ export type PlantOutputPoint = { plantCode: string; plantName: string; actual: n
 
 export type BatchScheduleSummary = { onTrack: number; behind: number };
 
+export type AgingBucket = { bucket: string; count: number };
+
+export type DueDateCount = { day: string; count: number };
+
+export type PlantStreamCapacityRow = {
+  plant_id: string;
+  plant_code: string;
+  plant_name: string;
+  stream: string;
+  capacity: string;
+  actual: string;
+};
+
 export type KpisResponse = {
   output: { actual: number; planned: number; month: string };
   capacity: { actual: number; capacity: number; month: string };
@@ -59,6 +72,9 @@ export type KpisResponse = {
   capacityByStream: StreamCapacityPoint[];
   outputByPlant: PlantOutputPoint[];
   batchesSchedule: BatchScheduleSummary;
+  commitmentsAging: AgingBucket[];
+  batchDueDates: DueDateCount[];
+  capacityByPlantAndStream: PlantStreamCapacityRow[];
 };
 
 export type ImportResult = { success: boolean; message: string };
